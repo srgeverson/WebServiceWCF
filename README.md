@@ -3,6 +3,13 @@ Este é um Serviço Web WCF em C#.
 
 ## 📌 Versão em continuo desenvolvimento
 
+
+💡A chave secreta de validação do token é uma palavra encriptada pelo [MD5 Hash Generator](https://www.md5hashgenerator.com/).
+
+💡As senhas de dados iniciais foram encriptada pelo [Bcrypt-Generator.com](https://bcrypt-generator.com/).
+
+💡Os tokens gerados pode ser validado pelo [JWT.io](https://jwt.io/).
+
 💡 Funcionalidades presentes neste App
 
 * Gera token JWT a partir das credenciais informadas pelo usuário
