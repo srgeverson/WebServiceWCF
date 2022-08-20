@@ -33,6 +33,9 @@ Este é um Serviço Web WCF em C#.
 # Serializa/Deserializa Objetos para JSON
 $ SystemNewtonsoft.Json 13.0.1
 
+### Gerador e validador de tokens
+$ JWT 9.0.3
+
 ### 
 $ System.ComponentModel.Annotations 5.0.0
 
