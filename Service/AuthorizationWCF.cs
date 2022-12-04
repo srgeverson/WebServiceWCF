@@ -22,47 +22,46 @@ namespace WebServiceWCF.Service
         private static string EXPIRED = ConfigurationManager.AppSettings["expired"];
         private static string TOKEN_TYPE = ConfigurationManager.AppSettings["token"];
 
-        public UsuarioLogado gerarToken(Usuario usuario, UsuarioLogin usuarioLogin, PermissaoService permissaoService)
+        public UsuarioLogado gerarToken(Usuario usuario, UsuarioLogin usuarioLogin, int[] permissoesId)
         {
-            if (usuario == null)
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 404, Mensagem = "Não foi encontrado usuário vinculado ao e-mail informado!" }, HttpStatusCode.NotFound);
             try
             {
-                if (!BCryptNet.Verify(usuarioLogin.senha, usuario.Senha)) throw new Exception("Senha inválida!");
+                //if (!BCryptNet.Verify(usuarioLogin.senha, usuario.Senha)) throw new Exception("Senha inválida!");
 
-                if (string.IsNullOrEmpty(SECRET)) throw new Exception("Não foi encontrado a chave secreta de validação do token.");
-                if (string.IsNullOrEmpty(EXPIRED)) throw new Exception("Não foi definido tempo de validação do token.");
-                if (string.IsNullOrEmpty(TOKEN_TYPE)) throw new Exception("Não foi definido tipo do token.");
+                //if (string.IsNullOrEmpty(SECRET)) throw new Exception("Não foi encontrado a chave secreta de validação do token.");
+                //if (string.IsNullOrEmpty(EXPIRED)) throw new Exception("Não foi definido tempo de validação do token.");
+                //if (string.IsNullOrEmpty(TOKEN_TYPE)) throw new Exception("Não foi definido tipo do token.");
 
-                int[] permissoesId = permissaoService.PermissoesPorEmail(usuarioLogin.login)
-                    .Select(permissao => permissao.Id)
-                    .ToList()
-                    .ConvertAll(x => x.Value)
-                    .ToArray();
-                var utcNow = DateTimeOffset.UtcNow;
+                //int[] permissoesId = permissaoService.PermissoesPorEmail(usuarioLogin.login)
+                //    .Select(permissao => permissao.Id)
+                //    .ToList()
+                //    .ConvertAll(x => x.Value)
+                //    .ToArray();
+                //var utcNow = DateTimeOffset.UtcNow;
                 var extraHeaders = new Dictionary<string, object> { };
-                var payload = new PayloadToken()
-                {
-                    sub = usuario.Id,
-                    iss = Assembly.GetExecutingAssembly().GetName().Name,
-                    roles = permissoesId,
-                    name = usuario.Nome,
-                    iat = utcNow.ToUnixTimeSeconds(),
-                    exp = utcNow.AddSeconds(Convert.ToDouble(EXPIRED)).ToUnixTimeSeconds(),
-                    aud = "AppGenérico"
-                };
-                var key = Convert.FromBase64String(SECRET);
-                IJwtAlgorithm algorithm = new HMACSHA256Algorithm(); // symmetric
-                IJsonSerializer serializer = new JsonNetSerializer();
-                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-                IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-                var token = encoder.Encode(extraHeaders, payload, key);
+                //var payload = new PayloadToken()
+                //{
+                //    sub = usuario.Id,
+                //    iss = Assembly.GetExecutingAssembly().GetName().Name,
+                //    roles = permissoesId,
+                //    name = usuario.Nome,
+                //    iat = utcNow.ToUnixTimeSeconds(),
+                //    exp = utcNow.AddSeconds(Convert.ToDouble(EXPIRED)).ToUnixTimeSeconds(),
+                //    aud = "AppGenérico"
+                //};
+                //var key = Convert.FromBase64String(SECRET);
+                //IJwtAlgorithm algorithm = new HMACSHA256Algorithm(); // symmetric
+                //IJsonSerializer serializer = new JsonNetSerializer();
+                //IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                //IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+                //var token = encoder.Encode(extraHeaders, payload, key);
 
-                return new UsuarioLogado() {
-                    token_type = TOKEN_TYPE,
-                    access_token = token,
-                    expires_in = utcNow.AddSeconds(Convert.ToDouble(EXPIRED)).ToUnixTimeSeconds(),
-                    Mensagem = "Usuário autorizado" };
+                //return new UsuarioLogado() {
+                //    token_type = TOKEN_TYPE,
+                //    access_token = token,
+                //    expires_in = utcNow.AddSeconds(Convert.ToDouble(EXPIRED)).ToUnixTimeSeconds(),
+                //    Mensagem = "Usuário autorizado" };
+                return null;
             }
             catch (Exception ex)
             {

@@ -29,7 +29,7 @@ namespace WebServiceWCF
         [OperationContract]
         [WebInvoke(Method = "GET", ResponseFormat = WebMessageFormat.Json, UriTemplate = "usuarios/listar")]
         [CustAttributetBehavior]
-        List<UsuarioResponse> ListarTodosUsuarios();
+        IList<UsuarioResponse> ListarTodosUsuarios();
 
         [OperationContract]
         [WebInvoke(Method = "POST", ResponseFormat = WebMessageFormat.Json, UriTemplate = "usuarios/cadastrar")]
