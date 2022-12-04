@@ -1,6 +1,5 @@
 ﻿using AppClassLibraryClient.model;
 using AppClassLibraryDomain.model;
-using AppClassLibraryDomain.service;
 using JWT;
 using JWT.Algorithms;
 using JWT.Exceptions;
@@ -8,11 +7,8 @@ using JWT.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.ServiceModel.Web;
-using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace WebServiceWCF.Service
 {

@@ -16,7 +16,6 @@ using System.Reflection;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using WebServiceWCF.Service;
-using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace WebServiceWCF
 {
@@ -118,7 +117,6 @@ namespace WebServiceWCF
                 if (usuarioRequest == null)
                     throw new AuthorizationServerException("Dados inválidos!");
                 var usuario = _usuarioMapper.ToModel(usuarioRequest);
-                usuario.Senha = BCryptNet.HashPassword(usuarioRequest.Senha);
                 var usuarioNovo = _authorizationServerFacade.CadastrarUsuario(usuario);
                 var usuarioResponse = _usuarioMapper.ToResponse(usuarioNovo);
                 return usuarioResponse;
