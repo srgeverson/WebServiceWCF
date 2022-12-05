@@ -1,12 +1,14 @@
 ﻿using AppClassLibraryClient.mapper;
 using AppClassLibraryClient.model;
-using AppClassLibraryDomain.DAO;
 using AppClassLibraryDomain.exception;
 using AppClassLibraryDomain.facade;
 using AppClassLibraryDomain.service;
+using AppClassLibraryDomain.utils;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
+using Spring.Context;
+using Spring.Context.Support;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -22,23 +24,36 @@ namespace WebServiceWCF
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class WebServiceWCF : IWebServiceWCF
     {
+        #region atributos
         private IAuthorizationServerFacade _authorizationServerFacade;
         private ISistemaService _sistemaService;
         private UsuarioMapper _usuarioMapper;
+        private static readonly IApplicationContext CONTEXT = ContextRegistry.GetContext();
+        #endregion
 
         public WebServiceWCF()
         {
-            //if (string.IsNullOrEmpty(ConexaoDAO.URLCONEXAO))
-            //    ConexaoDAO.URLCONEXAO = ConfigurationManager.AppSettings["connectionString"];
+            try
+            {
+                if (_usuarioMapper == null)
+                    _usuarioMapper = new UsuarioMapper();
 
-            if (_usuarioMapper == null)
-                _usuarioMapper = new UsuarioMapper();
+                if (_authorizationServerFacade == null)
+                    _authorizationServerFacade = (IAuthorizationServerFacade)CONTEXT.GetObject("AuthorizationServerFacade");
 
-            if (_sistemaService == null)
-                _sistemaService = new SistemaService();
+                if (_sistemaService == null)
+                    _sistemaService = (ISistemaService)CONTEXT.GetObject("SistemaService");
 
-            _sistemaService.Sistema(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductName);
-
+                _sistemaService.Sistema(Assembly.GetExecutingAssembly().GetName().Name);
+            }
+            catch (SistemaException sex)
+            {
+                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = (int)(sex.Status == null ? 400 : sex.Status), Mensagem = sex.Message }, EnumUtils<HttpStatusCode>.FindEnumByValue(sex.Status));
+            }
+            catch (Exception ex)
+            {
+                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.InternalServerError);
+            }
         }
 
         public UsuarioLogado Autenticar(UsuarioLogin usuarioLogin)

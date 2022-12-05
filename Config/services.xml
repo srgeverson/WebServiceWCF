@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<objects xmlns="http://www.springframework.net">
+	<description>DI/IoC Services</description>
+	
+	<object name="UsuarioService" type="AppClassLibraryDomain.service.UsuarioService, AppClassLibraryDomain" >
+		<property name="UsuarioDAO" ref="UsuarioSQLDAO" />
+	</object>
+	
+	<object name="PermissaoService" type="AppClassLibraryDomain.service.PermissaoService, AppClassLibraryDomain" >
+		<property name="PermissaoDAO" ref="PermissaoSQLDAO" />
+	</object>
+	
+	<object name="UsuarioPermissaoService" type="AppClassLibraryDomain.service.UsuarioPermissaoService, AppClassLibraryDomain" >
+		<property name="UsuarioPermissaoDAO" ref="UsuarioPermissaoSQLDAO" />
+	</object>
+
+	<object name="SistemaService" type="AppClassLibraryDomain.service.SistemaService, AppClassLibraryDomain" >
+		<property name="SistemaDAO" ref="SistemaSQLDAO" />
+	</object>
+
+</objects>

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<objects xmlns="http://www.springframework.net">
+	<description>DI/IoC DAO</description>
+	
+	<object name="UsuarioSQLDAO" type="AppClassLibraryDomain.DAO.SQL.UsuarioSQLDAO, AppClassLibraryDomain">
+		<property name="urlConnection" ref="UrlConnection"/>
+	</object>
+
+	<object name="PermissaoSQLDAO" type="AppClassLibraryDomain.DAO.SQL.PermissaoDAO, AppClassLibraryDomain">
+		<property name="urlConnection" ref="UrlConnection"/>
+	</object>
+		
+	<object name="UsuarioPermissaoSQLDAO" type="AppClassLibraryDomain.DAO.SQL.UsuarioPermissaoSQLDAO, AppClassLibraryDomain">
+		<property name="urlConnection" ref="UrlConnection"/>
+	</object>
+
+	<object name="SistemaSQLDAO" type="AppClassLibraryDomain.DAO.SQL.SistemaSQLDAO, AppClassLibraryDomain">
+		<property name="urlConnection" ref="UrlConnection"/>
+	</object>
+	
+</objects>
