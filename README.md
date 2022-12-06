@@ -28,9 +28,6 @@ Este é um Serviço Web WCF em C#.
 ### Projeto de classes DTO para utilização em retorno de aplicação
 * [AppClassLibraryClient](https://github.com/srgeverson/AppClassLibraryClient)
 
-### Gerador e validador de tokens
-$ JWT 9.0.3
-
 ### 
 $ System.ComponentModel.Annotations 5.0.0
 
