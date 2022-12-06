@@ -2,17 +2,14 @@
 using AppClassLibraryClient.model;
 using AppClassLibraryDomain.exception;
 using AppClassLibraryDomain.facade;
+using AppClassLibraryDomain.model.DTO;
 using AppClassLibraryDomain.service;
 using AppClassLibraryDomain.utils;
-using JWT;
-using JWT.Algorithms;
-using JWT.Serializers;
 using Spring.Context;
 using Spring.Context.Support;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.ServiceModel.Activation;
@@ -28,6 +25,7 @@ namespace WebServiceWCF
         private IAuthorizationServerFacade _authorizationServerFacade;
         private ISistemaService _sistemaService;
         private UsuarioMapper _usuarioMapper;
+        private ConfiguracaoTokenDTO _configuracaoTokenDTO;
         private static readonly IApplicationContext CONTEXT = ContextRegistry.GetContext();
         #endregion
 
@@ -41,10 +39,20 @@ namespace WebServiceWCF
                 if (_authorizationServerFacade == null)
                     _authorizationServerFacade = (IAuthorizationServerFacade)CONTEXT.GetObject("AuthorizationServerFacade");
 
+                if (_configuracaoTokenDTO == null)
+                {
+                    _configuracaoTokenDTO = _authorizationServerFacade.ValidarConfigucaoDoToken(
+                    ConfigurationManager.AppSettings["secret"],
+                    ConfigurationManager.AppSettings["expired"],
+                    ConfigurationManager.AppSettings["token"],
+                    Assembly.GetExecutingAssembly().GetName().Name
+                    );
+                }
+
                 if (_sistemaService == null)
                     _sistemaService = (ISistemaService)CONTEXT.GetObject("SistemaService");
 
-                _sistemaService.Sistema(Assembly.GetExecutingAssembly().GetName().Name);
+                _sistemaService.Sistema(_configuracaoTokenDTO.App);
             }
             catch (SistemaException sex)
             {
@@ -56,62 +64,38 @@ namespace WebServiceWCF
             }
         }
 
-        public UsuarioLogado Autenticar(UsuarioLogin usuarioLogin)
+        public UsuarioLogadoDTO Autenticar(UsuarioLogin usuarioLogin)
         {
             try
             {
-                //ok
+                if(usuarioLogin==null)
+                    throw new AuthorizationServerException(400, "Informações de login não fornecidas");
                 if (String.IsNullOrEmpty(usuarioLogin.login) || String.IsNullOrEmpty(usuarioLogin.senha))
-                    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 400, Mensagem = "E-mail ou senha não informado!" }, HttpStatusCode.BadRequest);
-                //ok
+                    throw new AuthorizationServerException("E-mail ou senha não informado!");
+                
                 var usuario = _authorizationServerFacade.BuscarPorEmail(usuarioLogin.login);
                 if (usuario == null)
-                    throw new AuthorizationServerException("Não foi encontrado usuário vinculado ao e-mail informado!");
-                //ok
-                var expired = ConfigurationManager.AppSettings["expired"];
-                var token_type = ConfigurationManager.AppSettings["token"];
-                var secret = ConfigurationManager.AppSettings["secret"];
-                _authorizationServerFacade.ValidarConfigucaoDoToken(
-                    secret,
-                    expired,
-                    token_type
-                    );
+                    throw new AuthorizationServerException(401, "Não foi encontrado usuário vinculado ao e-mail informado!");
+                _authorizationServerFacade.ValidarSenha(usuarioLogin.senha, usuario);
+
                 long[] permissoesId = _authorizationServerFacade.PermissoesPorEmail(usuarioLogin.login);
-                var utcNow = DateTimeOffset.UtcNow;
-                var payload = new PayloadToken()
-                {
-                    sub = usuario.Id,
-                    iss = Assembly.GetExecutingAssembly().GetName().Name,
-                    roles = permissoesId,
-                    name = usuario.Nome,
-                    iat = utcNow.ToUnixTimeSeconds(),
-                    exp = utcNow.AddSeconds(Convert.ToDouble(expired)).ToUnixTimeSeconds(),
-                    aud = "AppGenérico"
-                };
-                var extraHeaders = new Dictionary<string, object> { };
-                var key = Convert.FromBase64String(secret);
-                IJwtAlgorithm algorithm = new HMACSHA256Algorithm(); // symmetric
-                IJsonSerializer serializer = new JsonNetSerializer();
-                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-                IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-                var token = encoder.Encode(extraHeaders, payload, key);
 
-
-                var usuarioLogado = new UsuarioLogado()
-                {
-                    token_type = token_type,
-                    access_token = token,
-                    expires_in = utcNow.AddSeconds(Convert.ToDouble(expired)).ToUnixTimeSeconds(),
-                    Mensagem = "Usuário autorizado"
-                };
+                var usuarioLogadoDTO = _authorizationServerFacade.GerarToken(usuario, _configuracaoTokenDTO, permissoesId);
                 _authorizationServerFacade.AtualizaDataUltimoAcesso(usuario.Id);
 
-                return usuarioLogado;
+                return usuarioLogadoDTO;
 
             }
             catch (AuthorizationServerException asex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 400, Mensagem = asex.Message }, HttpStatusCode.BadRequest);
+                throw new WebFaultException<TokenValidado>(
+                    new TokenValidado()
+                    {
+                        StatusCode = (int)(asex.Status == null ? 404 : asex.Status),
+                        Mensagem = asex.Message
+                    },
+                    EnumUtils<HttpStatusCode>.FindEnumByValue(asex.Status)
+                    );
             }
             catch (Exception ex)
             {
@@ -121,8 +105,39 @@ namespace WebServiceWCF
 
         public TokenValidado Autorizar()
         {
-            var authorizationWCF = new AuthorizationWCF();
-            return authorizationWCF.validarToken(WebOperationContext.Current.IncomingRequest);
+            try
+            {
+
+                var authorization = WebOperationContext.Current.IncomingRequest.Headers["Authorization"];
+
+                if (string.IsNullOrEmpty(authorization)) throw new Exception("Token não encontrado!");
+
+                if (!authorization.Contains(_configuracaoTokenDTO.Token))
+                    throw new Exception(string.Format("Tipo de token está diferente de {0}!", _configuracaoTokenDTO.Token));
+
+                var token = authorization.ToString().Replace(_configuracaoTokenDTO.Token, "").Trim();
+
+                return new TokenValidado()
+                {
+                    StatusCode = 200,
+                    Mensagem = _authorizationServerFacade.ValidarToken(_configuracaoTokenDTO, token) ? "Token válido!" : String.Empty
+                };
+            }
+            catch (AuthorizationServerException asex)
+            {
+                throw new WebFaultException<TokenValidado>(
+                    new TokenValidado()
+                    {
+                        StatusCode = (int)(asex.Status == null ? 401 : asex.Status),
+                        Mensagem = asex.Message
+                    },
+                    EnumUtils<HttpStatusCode>.FindEnumByValue(asex.Status)
+                    );
+            }
+            catch (Exception ex)
+            {
+                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.BadRequest);
+            }
         }
 
         public UsuarioResponse CadastrarUsuario(UsuarioRequest usuarioRequest)
@@ -152,9 +167,7 @@ namespace WebServiceWCF
         }
 
         public IList<UsuarioResponse> ListarTodosUsuarios() => _usuarioMapper.ToListResponse(_authorizationServerFacade.ListarTodosUsuarios());
-        public Pessoa NomeESobreNome(string nome, string sobreNome)
-        {
-            return new Pessoa() { Nome = nome, SobreNome = sobreNome };
-        }
+        
+        public Pessoa NomeESobreNome(string nome, string sobreNome) => new Pessoa() { Nome = nome, SobreNome = sobreNome };
     }
 }

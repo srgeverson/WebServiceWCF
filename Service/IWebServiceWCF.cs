@@ -1,4 +1,5 @@
 ﻿using AppClassLibraryClient.model;
+using AppClassLibraryDomain.model.DTO;
 using System.Collections.Generic;
 using System.ServiceModel;
 using System.ServiceModel.Web;
@@ -20,7 +21,7 @@ namespace WebServiceWCF
 
         [OperationContract]
         [WebInvoke(Method = "POST", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "login")]
-        UsuarioLogado Autenticar(UsuarioLogin usuarioLogin);
+        UsuarioLogadoDTO Autenticar(UsuarioLogin usuarioLogin);
 
         [OperationContract]
         [WebInvoke(Method = "POST", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "validar")]
