@@ -14,7 +14,6 @@ using System.Net;
 using System.Reflection;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
-using WebServiceWCF.Service;
 
 namespace WebServiceWCF
 {
@@ -68,17 +67,17 @@ namespace WebServiceWCF
         {
             try
             {
-                if(usuarioLogin==null)
-                    throw new AuthorizationServerException(400, "Informações de login não fornecidas");
+                if (usuarioLogin == null)
+                    throw new AuthorizationServerException("Informações de login não fornecidas");
                 if (String.IsNullOrEmpty(usuarioLogin.login) || String.IsNullOrEmpty(usuarioLogin.senha))
                     throw new AuthorizationServerException("E-mail ou senha não informado!");
-                
+
                 var usuario = _authorizationServerFacade.BuscarPorEmail(usuarioLogin.login);
                 if (usuario == null)
-                    throw new AuthorizationServerException(401, "Não foi encontrado usuário vinculado ao e-mail informado!");
+                    throw new AuthorizationServerException("Não foi encontrado usuário vinculado ao e-mail informado!");
                 _authorizationServerFacade.ValidarSenha(usuarioLogin.senha, usuario);
 
-                long[] permissoesId = _authorizationServerFacade.PermissoesPorEmail(usuarioLogin.login);
+                long[] permissoesId = _authorizationServerFacade.PermissoesPorEmailESistema(usuarioLogin.login, _configuracaoTokenDTO.App);
 
                 var usuarioLogadoDTO = _authorizationServerFacade.GerarToken(usuario, _configuracaoTokenDTO, permissoesId);
                 _authorizationServerFacade.AtualizaDataUltimoAcesso(usuario.Id);
@@ -91,10 +90,10 @@ namespace WebServiceWCF
                 throw new WebFaultException<TokenValidado>(
                     new TokenValidado()
                     {
-                        StatusCode = (int)(asex.Status == null ? 404 : asex.Status),
+                        StatusCode = (int)(asex.Status == null ? 401 : asex.Status),
                         Mensagem = asex.Message
                     },
-                    EnumUtils<HttpStatusCode>.FindEnumByValue(asex.Status)
+                    (HttpStatusCode)(int)(asex.Status == null ? 401 : asex.Status)
                     );
             }
             catch (Exception ex)
@@ -107,7 +106,6 @@ namespace WebServiceWCF
         {
             try
             {
-
                 var authorization = WebOperationContext.Current.IncomingRequest.Headers["Authorization"];
 
                 if (string.IsNullOrEmpty(authorization)) throw new Exception("Token não encontrado!");
@@ -131,12 +129,12 @@ namespace WebServiceWCF
                         StatusCode = (int)(asex.Status == null ? 401 : asex.Status),
                         Mensagem = asex.Message
                     },
-                    EnumUtils<HttpStatusCode>.FindEnumByValue(asex.Status)
+                    (HttpStatusCode)(asex.Status == null ? 401 : asex.Status)
                     );
             }
             catch (Exception ex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.BadRequest);
+                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -167,7 +165,7 @@ namespace WebServiceWCF
         }
 
         public IList<UsuarioResponse> ListarTodosUsuarios() => _usuarioMapper.ToListResponse(_authorizationServerFacade.ListarTodosUsuarios());
-        
+
         public Pessoa NomeESobreNome(string nome, string sobreNome) => new Pessoa() { Nome = nome, SobreNome = sobreNome };
     }
 }
