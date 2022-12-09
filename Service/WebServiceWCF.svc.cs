@@ -55,11 +55,11 @@ namespace WebServiceWCF
             }
             catch (SistemaException sex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = (int)(sex.Status == null ? 400 : sex.Status), Mensagem = sex.Message }, EnumUtils<HttpStatusCode>.FindEnumByValue(sex.Status));
+                throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = (int)(sex.Status == null ? 400 : sex.Status), Mensagem = sex.Message }, EnumUtils<HttpStatusCode>.FindEnumByValue(sex.Status));
             }
             catch (Exception ex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.InternalServerError);
+                throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -87,8 +87,8 @@ namespace WebServiceWCF
             }
             catch (AuthorizationServerException asex)
             {
-                throw new WebFaultException<TokenValidado>(
-                    new TokenValidado()
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO()
                     {
                         StatusCode = (int)(asex.Status == null ? 401 : asex.Status),
                         Mensagem = asex.Message
@@ -98,11 +98,11 @@ namespace WebServiceWCF
             }
             catch (Exception ex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.BadRequest);
+                throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.BadRequest);
             }
         }
 
-        public TokenValidado Autorizar()
+        public ResponseDefaultDTO Autorizar()
         {
             try
             {
@@ -115,7 +115,7 @@ namespace WebServiceWCF
 
                 var token = authorization.ToString().Replace(_configuracaoTokenDTO.Token, "").Trim();
 
-                return new TokenValidado()
+                return new ResponseDefaultDTO()
                 {
                     StatusCode = 200,
                     Mensagem = _authorizationServerFacade.ValidarToken(_configuracaoTokenDTO, token) ? "Token válido!" : String.Empty
@@ -123,8 +123,8 @@ namespace WebServiceWCF
             }
             catch (AuthorizationServerException asex)
             {
-                throw new WebFaultException<TokenValidado>(
-                    new TokenValidado()
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO()
                     {
                         StatusCode = (int)(asex.Status == null ? 401 : asex.Status),
                         Mensagem = asex.Message
@@ -134,7 +134,7 @@ namespace WebServiceWCF
             }
             catch (Exception ex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.InternalServerError);
+                throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -143,19 +143,33 @@ namespace WebServiceWCF
             try
             {
                 if (usuarioRequest == null)
-                    throw new AuthorizationServerException("Dados inválidos!");
+                    throw new NegocioException("Dados inválidos!");
                 var usuario = _usuarioMapper.ToModel(usuarioRequest);
                 var usuarioNovo = _authorizationServerFacade.CadastrarUsuario(usuario);
                 var usuarioResponse = _usuarioMapper.ToResponse(usuarioNovo);
                 return usuarioResponse;
             }
-            catch (AuthorizationServerException asex)
+            catch (NegocioException nex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 400, Mensagem = asex.Message }, HttpStatusCode.BadRequest);
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO()
+                    {
+                        StatusCode = (int)(nex.Status == null ? 400 : nex.Status),
+                        Mensagem = nex.Message
+                    },
+                    (HttpStatusCode)(nex.Status == null ? 400 : nex.Status)
+                    );
             }
             catch (Exception ex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 500, Mensagem = ex.Message }, HttpStatusCode.BadRequest);
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO()
+                    {
+                        StatusCode = 500,
+                        Mensagem = ex.Message
+                    },
+                    HttpStatusCode.InternalServerError
+                    );
             }
         }
 
@@ -164,8 +178,64 @@ namespace WebServiceWCF
             return string.Format("Seja bem vindo {0}!", nome);
         }
 
-        public IList<UsuarioResponse> ListarTodosUsuarios() => _usuarioMapper.ToListResponse(_authorizationServerFacade.ListarTodosUsuarios());
+        public IList<UsuarioResponse> ListarTodosUsuarios()
+        {
+            try
+            {
+                return _usuarioMapper.ToListResponse(_authorizationServerFacade.ListarTodosUsuarios());
+            }
+            catch (NegocioException nex)
+            {
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO()
+                    {
+                        StatusCode = (int)(nex.Status == null ? 400 : nex.Status),
+                        Mensagem = nex.Message
+                    },
+                    (HttpStatusCode)(nex.Status == null ? 400 : nex.Status)
+                    );
+            }
+            catch (Exception ex)
+            {
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO()
+                    {
+                        StatusCode = 500,
+                        Mensagem = ex.Message
+                    },
+                    HttpStatusCode.InternalServerError
+                    );
+            }
+        }
 
-        public Pessoa NomeESobreNome(string nome, string sobreNome) => new Pessoa() { Nome = nome, SobreNome = sobreNome };
+        public Pessoa NomeESobreNome(string nome, string sobreNome)
+        {
+            try
+            {
+                return new Pessoa() { Nome = nome, SobreNome = sobreNome };
+            }
+            catch (NegocioException nex)
+            {
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO()
+                    {
+                        StatusCode = (int)(nex.Status == null ? 400 : nex.Status),
+                        Mensagem = nex.Message
+                    },
+                    (HttpStatusCode)(nex.Status == null ? 400 : nex.Status)
+                    );
+            }
+            catch (Exception ex)
+            {
+                throw new WebFaultException<ResponseDefaultDTO>(
+                    new ResponseDefaultDTO() 
+                    { 
+                        StatusCode = 500, 
+                        Mensagem = ex.Message 
+                    }, 
+                    HttpStatusCode.InternalServerError
+                    );
+            }
+        }
     }
 }

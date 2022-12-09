@@ -69,8 +69,8 @@ namespace WebServiceWCF
             }
             catch (AuthorizationServerException asex)
             {
-                throw new WebFaultException<TokenValidado>(
-                                       new TokenValidado()
+                throw new WebFaultException<ResponseDefaultDTO>(
+                                       new ResponseDefaultDTO()
                                        {
                                            StatusCode = (int)(asex.Status == null ? 403 : asex.Status),
                                            Mensagem = asex.Message
@@ -80,8 +80,8 @@ namespace WebServiceWCF
             }
             catch (Exception ex)
             {
-                throw new WebFaultException<TokenValidado>(
-                        new TokenValidado()
+                throw new WebFaultException<ResponseDefaultDTO>(
+                        new ResponseDefaultDTO()
                         {
                             StatusCode = 500,
                             Mensagem = ex.Message

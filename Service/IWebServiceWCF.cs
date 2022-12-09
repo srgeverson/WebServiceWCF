@@ -35,7 +35,7 @@ namespace WebServiceWCF
             ResponseFormat = WebMessageFormat.Json, 
             BodyStyle = WebMessageBodyStyle.Bare, 
             UriTemplate = "validar")]
-        TokenValidado Autorizar();
+        ResponseDefaultDTO Autorizar();
 
         [OperationContract]
         [WebInvoke(

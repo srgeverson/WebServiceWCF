@@ -57,11 +57,11 @@ namespace WebServiceWCF.Service
             }
             catch (Exception ex)
             {
-                throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = ex.Message }, HttpStatusCode.Unauthorized);
+                throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = ex.Message }, HttpStatusCode.Unauthorized);
             }
         }
 
-        public TokenValidado validarToken(IncomingWebRequestContext request)
+        public ResponseDefaultDTO validarToken(IncomingWebRequestContext request)
         {
             //try
             //{
@@ -74,7 +74,7 @@ namespace WebServiceWCF.Service
             //    IJwtAlgorithm algorithm = new HMACSHA256Algorithm(); // symmetric
             //    IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
             //    var key = Convert.FromBase64String(SECRET);
-            //    return new TokenValidado()
+            //    return new ResponseDefaultDTO()
             //    {
             //        StatusCode = 200,
             //        Mensagem = string.IsNullOrEmpty(decoder.Decode(token, key, verify: true)) ? string.Empty : "Token válido!"
@@ -82,19 +82,19 @@ namespace WebServiceWCF.Service
             //}
             //catch (TokenNotYetValidException tnyvex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = tnyvex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = tnyvex.Message }, HttpStatusCode.Unauthorized);
             //}
             //catch (TokenExpiredException teex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = teex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = teex.Message }, HttpStatusCode.Unauthorized);
             //}
             //catch (SignatureVerificationException svex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = svex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = svex.Message }, HttpStatusCode.Unauthorized);
             //}
             //catch (Exception ex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = ex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = ex.Message }, HttpStatusCode.Unauthorized);
             //}
             return null;
         }
@@ -118,19 +118,19 @@ namespace WebServiceWCF.Service
             //}
             //catch (TokenNotYetValidException tnyvex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = tnyvex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = tnyvex.Message }, HttpStatusCode.Unauthorized);
             //}
             //catch (TokenExpiredException teex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = teex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = teex.Message }, HttpStatusCode.Unauthorized);
             //}
             //catch (SignatureVerificationException svex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = svex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = svex.Message }, HttpStatusCode.Unauthorized);
             //}
             //catch (Exception ex)
             //{
-            //    throw new WebFaultException<TokenValidado>(new TokenValidado() { StatusCode = 401, Mensagem = ex.Message }, HttpStatusCode.Unauthorized);
+            //    throw new WebFaultException<ResponseDefaultDTO>(new ResponseDefaultDTO() { StatusCode = 401, Mensagem = ex.Message }, HttpStatusCode.Unauthorized);
             //}
             return null;
         }
